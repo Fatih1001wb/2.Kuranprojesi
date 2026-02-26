@@ -1,6 +1,6 @@
 /* ─── Reset & Box Model ────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 /* ─── Tema geçişi ───────────────────────────────────── */
 html { transition: background-color 0.3s ease, color 0.3s ease; }
@@ -128,6 +128,11 @@ body {
 
 button { cursor: pointer; font-family: inherit; border: none; background: none; -webkit-tap-highlight-color: transparent; }
 input  { font-family: inherit; }
+select, input, button, textarea {
+  -webkit-appearance: none;
+  appearance: none;
+}
+button, select, input[type="range"] { touch-action: manipulation; }
 img    { max-width: 100%; }
 
 /* ─── Animasyonlar ──────────────────────────────────── */
@@ -351,7 +356,7 @@ img    { max-width: 100%; }
     gap: 8px;
   }
   .player-info { min-width: auto; flex: 1; }
-  .player audio { width: 100%; order: 3; }
+  .player-progress-wrap { width: 100%; order: 3; }
 }
 
 /* ─── Giriş Ekranı ──────────────────────────────────── */
@@ -454,3 +459,62 @@ img    { max-width: 100%; }
 .tw-sukun { color: #7b6a54; }
 .tw-medd { color: #ca7f1f; }
 .tw-tanvin { color: #c0557a; }
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-btn {
+  padding: 6px 10px;
+  border-radius: 7px;
+  border: 1px solid rgba(200, 168, 75, 0.25);
+  color: var(--sidebar-text);
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.player-btn-main {
+  color: #c9a84c;
+  border-color: rgba(200, 168, 75, 0.45);
+}
+
+.player-progress-wrap {
+  flex: 1;
+  min-width: 160px;
+}
+
+.player-progress {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #c9a84c 0%, #c9a84c 0%, rgba(200, 168, 75, 0.25) 0%);
+  outline: none;
+}
+
+.player-progress::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #c9a84c;
+  border: none;
+}
+
+.player-progress::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #c9a84c;
+  border: none;
+}
+
+.player-time {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--sidebar-muted);
+  margin-top: 2px;
+}
