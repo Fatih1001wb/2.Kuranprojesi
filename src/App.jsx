@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import Kenarlik from './components/Kenarlik';
 import HatimPaneli from './components/HatimPaneli';
+import Kenarlik from './components/Kenarlik';
 import { useAuth } from './hooks/useAuth';
 import { useHatim } from './hooks/useHatim';
 import { useKayitlar } from './hooks/useKayitlar';
@@ -56,6 +56,12 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (ekran === 'giris' && auth.kullanici) {
+      setEkran('okuma');
+    }
+  }, [ekran, auth.kullanici]);
+
   const sayfaDegistir = (sayfa) => {
     if (sayfa === 'giris-git') {
       setEkran('giris');
@@ -71,21 +77,15 @@ function App() {
 
   if (auth.yukleniyor || yukleniyor) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'grid',
-          placeItems: 'center',
-          background: 'var(--bg)',
-          color: 'var(--text-muted)',
-        }}
-      >
+      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'var(--bg)', color: 'var(--text-muted)' }}>
         Yukleniyor...
       </div>
     );
   }
 
-  if (ekran === 'giris') return <GirisEkrani auth={auth} onGeri={() => setEkran('okuma')} />;
+  if (ekran === 'giris') {
+    return <GirisEkrani auth={auth} onGeri={() => setEkran('okuma')} />;
+  }
 
   return (
     <div className="app-layout">
@@ -95,16 +95,7 @@ function App() {
           <span />
           <span />
         </button>
-        <div
-          style={{
-            flex: 1,
-            minWidth: 0,
-            fontFamily: "'Cinzel', serif",
-            color: '#c9a84c',
-            letterSpacing: 1.5,
-            fontSize: 16,
-          }}
-        >
+        <div style={{ flex: 1, minWidth: 0, fontFamily: "'Cinzel', serif", color: '#c9a84c', letterSpacing: 1.5, fontSize: 16 }}>
           Kuran-i Kerim
         </div>
         <TemaButonu karanlik={karanlik} toggle={toggle} />
@@ -129,11 +120,7 @@ function App() {
         {!aktifSure && (
           <div style={{ position: 'fixed', top: 12, right: 14, zIndex: 90, display: 'flex', gap: 8 }}>
             {auth.kullanici && (
-              <button
-                className="btn-altin"
-                onClick={() => setHatimPanelAcik(true)}
-                style={{ padding: '8px 12px', fontSize: 13 }}
-              >
+              <button className="btn-altin" onClick={() => setHatimPanelAcik(true)} style={{ padding: '8px 12px', fontSize: 13 }}>
                 Hatim Takibi
               </button>
             )}
@@ -142,17 +129,7 @@ function App() {
         )}
 
         {hata ? (
-          <div
-            style={{
-              margin: 24,
-              padding: 18,
-              borderRadius: 12,
-              background: 'var(--red-bg)',
-              color: 'var(--red)',
-            }}
-          >
-            {hata}
-          </div>
+          <div style={{ margin: 24, padding: 18, borderRadius: 12, background: 'var(--red-bg)', color: 'var(--red)' }}>{hata}</div>
         ) : (
           <AnaSayfa
             aktifSure={aktifSure}
@@ -165,9 +142,7 @@ function App() {
         )}
       </main>
 
-      {hatimPanelAcik && (
-        <HatimPaneli hatim={hatim} kayitlar={kayitlar} karanlik={karanlik} kapat={() => setHatimPanelAcik(false)} />
-      )}
+      {hatimPanelAcik && <HatimPaneli hatim={hatim} kayitlar={kayitlar} karanlik={karanlik} kapat={() => setHatimPanelAcik(false)} />}
     </div>
   );
 }

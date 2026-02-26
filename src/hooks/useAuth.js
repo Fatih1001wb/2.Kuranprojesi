@@ -14,9 +14,11 @@ function turkceHata(msg = '') {
   if (msg.includes('auth/wrong-password')) return 'Sifre yanlis.';
   if (msg.includes('auth/email-already-in-use')) return 'Bu e-posta zaten kayitli.';
   if (msg.includes('auth/weak-password')) return 'Sifre en az 6 karakter olmali.';
-  if (msg.includes('auth/popup-closed-by-user')) return 'Girisi tamamlamadan pencereyi kapattiniz.';
+  if (msg.includes('auth/popup-closed-by-user')) return 'Giris penceresi kapatildi.';
   if (msg.includes('auth/operation-not-allowed')) return 'Bu giris tipi Firebase panelinde aktif degil.';
-  if (msg.includes('auth/unauthorized-domain')) return 'Bu domain Firebase tarafinda yetkilendirilmemis.';
+  if (msg.includes('auth/unauthorized-domain')) {
+    return 'Domain yetkisi yok. Firebase > Authentication > Settings > Authorized domains bolumune bu adresi ekleyin.';
+  }
   return 'Bir hata olustu.';
 }
 

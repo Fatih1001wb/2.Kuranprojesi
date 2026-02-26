@@ -19,6 +19,10 @@ export default function GirisEkrani({ auth, onGeri }) {
   const [bilgi, setBilgi] = useState('');
   const [yukleniyor, setYukleniyor] = useState('');
 
+  const geriDon = () => {
+    if (typeof onGeri === 'function') onGeri();
+  };
+
   const temizle = () => {
     setHata('');
     setBilgi('');
@@ -32,7 +36,7 @@ export default function GirisEkrani({ auth, onGeri }) {
     setYukleniyor('');
     if (sonuc?.hata) setHata(sonuc.hata);
     if (sonuc?.mesaj) setBilgi(sonuc.mesaj);
-    if (sonuc?.basari && mod === 'giris') onGeri();
+    if (sonuc?.basari && mod === 'giris') geriDon();
   };
 
   const sosyal = async (platform) => {
@@ -43,7 +47,9 @@ export default function GirisEkrani({ auth, onGeri }) {
     if (r?.hata) {
       setHata(r.hata);
       setYukleniyor('');
+      return;
     }
+    geriDon();
   };
 
   return (
@@ -61,8 +67,8 @@ export default function GirisEkrani({ auth, onGeri }) {
       }}
     >
       <div style={{ position: 'fixed', top: 14, left: 14 }}>
-        <button className="btn-altin" onClick={onGeri}>
-          ← Okumaya Dön
+        <button type="button" className="btn-altin" onClick={geriDon}>
+          ← Okumaya Don
         </button>
       </div>
 
@@ -71,42 +77,19 @@ export default function GirisEkrani({ auth, onGeri }) {
 
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <div style={{ fontFamily: "'Cinzel',serif", fontSize: 'clamp(22px,5vw,28px)', color: 'var(--text)', letterSpacing: 2, fontWeight: 600, marginBottom: 5 }}>
-            Kuran-ı Kerim
+            Kuran-i Kerim
           </div>
           <div style={{ fontSize: 'clamp(14px,3.5vw,16px)', color: 'var(--text-muted)' }}>
-            {mod === 'giris' ? 'Hesabınıza giriş yapın' : 'Yeni hesap oluşturun'}
+            {mod === 'giris' ? 'Hesabiniza giris yapin' : 'Yeni hesap olusturun'}
           </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
-          <button
-            onClick={() => sosyal('google')}
-            disabled={Boolean(yukleniyor)}
-            style={{
-              padding: '13px 16px',
-              borderRadius: 10,
-              border: '1px solid #dadce0',
-              background: '#fff',
-              fontSize: 'clamp(14px,3.5vw,16px)',
-              color: '#3c4043',
-            }}
-          >
-            Google ile {mod === 'giris' ? 'Giriş Yap' : 'Kayıt Ol'}
+          <button type="button" onClick={() => sosyal('google')} disabled={Boolean(yukleniyor)} style={{ padding: '13px 16px', borderRadius: 10, border: '1px solid #dadce0', background: '#fff', fontSize: 'clamp(14px,3.5vw,16px)', color: '#3c4043' }}>
+            Google ile {mod === 'giris' ? 'Giris Yap' : 'Kayit Ol'}
           </button>
-
-          <button
-            onClick={() => sosyal('github')}
-            disabled={Boolean(yukleniyor)}
-            style={{
-              padding: '13px 16px',
-              borderRadius: 10,
-              border: '1px solid #d1d5da',
-              background: '#24292f',
-              fontSize: 'clamp(14px,3.5vw,16px)',
-              color: '#fff',
-            }}
-          >
-            GitHub ile {mod === 'giris' ? 'Giriş Yap' : 'Kayıt Ol'}
+          <button type="button" onClick={() => sosyal('github')} disabled={Boolean(yukleniyor)} style={{ padding: '13px 16px', borderRadius: 10, border: '1px solid #d1d5da', background: '#24292f', fontSize: 'clamp(14px,3.5vw,16px)', color: '#fff' }}>
+            GitHub ile {mod === 'giris' ? 'Giris Yap' : 'Kayit Ol'}
           </button>
         </div>
 
@@ -118,10 +101,11 @@ export default function GirisEkrani({ auth, onGeri }) {
 
         <div style={{ display: 'flex', background: 'var(--bg-surface)', borderRadius: 10, padding: 4, marginBottom: 18, border: '1px solid var(--border)' }}>
           {[
-            ['giris', 'Giriş Yap'],
-            ['kayit', 'Kayıt Ol'],
+            ['giris', 'Giris Yap'],
+            ['kayit', 'Kayit Ol'],
           ].map(([k, label]) => (
             <button
+              type="button"
               key={k}
               onClick={() => {
                 setMod(k);
@@ -150,7 +134,7 @@ export default function GirisEkrani({ auth, onGeri }) {
             <input type="email" value={email} required placeholder="ornek@eposta.com" onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
           </div>
           <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 5 }}>ŞİFRE</label>
+            <label style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 5 }}>SIFRE</label>
             <input type="password" value={sifre} required minLength={6} placeholder="••••••••" onChange={(e) => setSifre(e.target.value)} style={inputStyle} />
           </div>
 
@@ -158,7 +142,7 @@ export default function GirisEkrani({ auth, onGeri }) {
           {bilgi && <div style={{ padding: '10px 13px', borderRadius: 8, marginBottom: 13, background: 'var(--green-bg)', color: 'var(--green)' }}>✓ {bilgi}</div>}
 
           <button type="submit" disabled={Boolean(yukleniyor)} className="btn-dolu" style={{ width: '100%' }}>
-            {yukleniyor === 'email' ? 'Yükleniyor...' : mod === 'giris' ? 'E-posta ile Giriş Yap' : 'Hesap Oluştur'}
+            {yukleniyor === 'email' ? 'Yukleniyor...' : mod === 'giris' ? 'E-posta ile Giris Yap' : 'Hesap Olustur'}
           </button>
         </form>
       </div>

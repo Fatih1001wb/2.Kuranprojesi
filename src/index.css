@@ -383,3 +383,30 @@ img    { max-width: 100%; }
   border-color: var(--gold-border);
   border-top-color: var(--gold);
 }
+
+.quran-page {
+  background: var(--bg-card);
+  border: 1px solid var(--gold-border);
+  border-radius: 16px;
+  padding: 26px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.quran-page-head {
+  font-size: 13px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+}
+
+.quran-page-text {
+  font-family: 'Scheherazade New', serif;
+  direction: rtl;
+  text-align: justify;
+  line-height: 2.3;
+  font-size: clamp(26px, 3.2vw, 34px);
+  color: var(--text);
+}
