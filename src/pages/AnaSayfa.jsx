@@ -15,22 +15,53 @@ async function tefsirGetir(sureNo) {
   return TEFSIR_CACHE[sureNo];
 }
 
-function AyetKart({ arapca, turkce, tefsir, sureNo, sureAd, sesOynat, yaziBoyutu, tefsirAcik }) {
+function ayetSayfasi(ayet, index) {
+  if (typeof ayet?.page === 'number') return ayet.page;
+  return Math.floor(index / 8) + 1;
+}
+
+function renkliArapcaYaz(text = '') {
+  return Array.from(text).map((ch, idx) => {
+    let cls = 'tw-base';
+    if (/[\u064B-\u064D]/u.test(ch)) cls = 'tw-tanvin';
+    else if (/\u064E/u.test(ch)) cls = 'tw-fetha';
+    else if (/\u064F/u.test(ch)) cls = 'tw-damma';
+    else if (/\u0650/u.test(ch)) cls = 'tw-kesra';
+    else if (/\u0651/u.test(ch)) cls = 'tw-sedde';
+    else if (/\u0652/u.test(ch)) cls = 'tw-sukun';
+    else if (/\u0670/u.test(ch)) cls = 'tw-medd';
+    return (
+      <span key={`ar-${idx}`} className={cls}>
+        {ch}
+      </span>
+    );
+  });
+}
+
+function AyetKart({ arapca, turkce, tefsir, sureNo, sureAd, sesOynat, yaziBoyutu, tefsirAcik, sayfaNo, satirRef }) {
   const [tefsirGoster, setTefsirGoster] = useState(false);
 
   return (
-    <div className="ayet-kart">
+    <div className="ayet-kart" ref={satirRef}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
         <div style={{ width: 34, height: 34, border: '1px solid var(--gold-border)', borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 13, color: 'var(--gold)', background: 'var(--bg-card)', fontFamily: "'Cinzel',serif" }}>
           {arapca.numberInSurah}
         </div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '2px 8px', border: '1px solid var(--gold-border)', borderRadius: 12 }}>
+          Sayfa {sayfaNo}
+        </div>
         <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg,var(--gold-border),transparent)' }} />
         <button className="btn-altin" style={{ padding: '5px 12px', fontSize: 12 }} onClick={() => sesOynat(ayetSesiUrl(sureNo, arapca.numberInSurah), `${sureAd} · ${arapca.numberInSurah}. ayet`)}>
-          ▶ Dinle
+          Dinle
         </button>
       </div>
-      <div className="ayet-arapca" style={{ fontSize: yaziBoyutu + 16 }}>{arapca.text}</div>
-      <div className="ayet-meal" style={{ fontSize: yaziBoyutu }}>{turkce?.text || ''}</div>
+
+      <div className="ayet-arapca" style={{ fontSize: yaziBoyutu + 16 }}>
+        {renkliArapcaYaz(arapca.text)}
+      </div>
+      <div className="ayet-meal" style={{ fontSize: yaziBoyutu }}>
+        {turkce?.text || ''}
+      </div>
 
       {tefsirAcik && tefsir && (
         <div style={{ marginTop: 8 }}>
@@ -48,25 +79,26 @@ function AyetKart({ arapca, turkce, tefsir, sureNo, sureAd, sesOynat, yaziBoyutu
   );
 }
 
-function SayfaModu({ ayetler, sureAdi }) {
-  const sayfalar = useMemo(() => {
-    const boyut = 8;
-    const result = [];
-    for (let i = 0; i < ayetler.length; i += boyut) {
-      result.push(ayetler.slice(i, i + boyut));
-    }
-    return result;
+function SayfaModu({ ayetler, sureAdi, sayfaRefleri }) {
+  const sayfaGruplari = useMemo(() => {
+    const harita = new Map();
+    ayetler.forEach((a, i) => {
+      const p = ayetSayfasi(a, i);
+      if (!harita.has(p)) harita.set(p, []);
+      harita.get(p).push(a);
+    });
+    return Array.from(harita.entries());
   }, [ayetler]);
 
   return (
     <div className="icerik-ic">
-      {sayfalar.map((paket, idx) => (
-        <section key={`sayfa-${idx}`} className="quran-page">
-          <div className="quran-page-head">{sureAdi} · Sayfa {idx + 1}</div>
+      {sayfaGruplari.map(([sayfaNo, paket]) => (
+        <section key={`sayfa-${sayfaNo}`} className="quran-page" ref={(el) => { sayfaRefleri.current[sayfaNo] = el; }}>
+          <div className="quran-page-head">{sureAdi} · Sayfa {sayfaNo}</div>
           <div className="quran-page-text">
             {paket.map((a) => (
               <span key={a.number} style={{ marginLeft: 8 }}>
-                {a.text} <span style={{ fontSize: 18, opacity: 0.7 }}>۝{a.numberInSurah}</span>
+                {renkliArapcaYaz(a.text)} <span style={{ fontSize: 18, opacity: 0.7 }}>۝{a.numberInSurah}</span>
               </span>
             ))}
           </div>
@@ -88,13 +120,26 @@ export default function AnaSayfa({ aktifSure, geriDon, kayitlar, auth, karanlik,
   const [tefsirAcik, setTefsirAcik] = useState(false);
   const [tefsirYukleniyor, setTefsirYukleniyor] = useState(false);
   const [sayfaGorunumu, setSayfaGorunumu] = useState(false);
+  const [hedefSayfa, setHedefSayfa] = useState('');
   const icerikRef = useRef(null);
+  const ayetRefleri = useRef({});
+  const sayfaRefleri = useRef({});
 
   const sureAdi = aktifSure ? SURE_ADLARI[aktifSure.number] || aktifSure.englishName : '';
   const nuzulYeri = aktifSure?.revelationType === 'Meccan' ? 'Mekke' : 'Medine';
   const girisliMi = Boolean(auth.kullanici);
   const yerIsaretli = aktifSure ? kayitlar.yerIsaretliMi(aktifSure.number) : false;
   const tamamlandi = aktifSure ? kayitlar.okunduMu(aktifSure.number) : false;
+
+  const sayfaListesi = useMemo(() => {
+    const s = new Set();
+    arapcaAyetler.forEach((a, i) => s.add(ayetSayfasi(a, i)));
+    return Array.from(s).sort((a, b) => a - b);
+  }, [arapcaAyetler]);
+
+  useEffect(() => {
+    if (sayfaListesi.length > 0) setHedefSayfa(String(sayfaListesi[0]));
+  }, [sayfaListesi]);
 
   useEffect(() => {
     if (!aktifSure) return;
@@ -129,6 +174,22 @@ export default function AnaSayfa({ aktifSure, geriDon, kayitlar, auth, karanlik,
     setTefsirYukleniyor(false);
   }, [aktifSure, tefsirAcik, tefsirAyetler]);
 
+  const sayfayaGit = () => {
+    const sayfaNo = Number(hedefSayfa);
+    if (!sayfaNo) return;
+
+    if (sayfaGorunumu) {
+      const hedef = sayfaRefleri.current[sayfaNo];
+      if (hedef) hedef.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    const hedefAyet = arapcaAyetler.find((a, i) => ayetSayfasi(a, i) === sayfaNo);
+    if (!hedefAyet) return;
+    const satir = ayetRefleri.current[hedefAyet.number];
+    if (satir) satir.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const sesOynat = (url, etiket) => setSes({ url, etiket });
   const sureyiDinle = () => aktifSure && setSes({ url: sureSesiUrl(aktifSure.number), etiket: `${sureAdi} · Tam sure` });
 
@@ -146,9 +207,20 @@ export default function AnaSayfa({ aktifSure, geriDon, kayitlar, auth, karanlik,
             <div className="sure-baslik-kucuk" style={{ fontSize: 13, color: 'var(--text-muted)' }}>{nuzulYeri} · {aktifSure.numberOfAyahs} ayet</div>
           </div>
 
-          <button className="btn-altin" onClick={sureyiDinle}>🎧 Dinle</button>
-          <button className="btn-altin" onClick={tefsirToggle} disabled={tefsirYukleniyor}>{tefsirYukleniyor ? 'Yukleniyor...' : '📚 Tefsir'}</button>
-          <button className="btn-altin" onClick={() => setOkumaModuAcik(true)} disabled={arapcaAyetler.length === 0}>⛶ Odak</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <select value={hedefSayfa} onChange={(e) => setHedefSayfa(e.target.value)} className="sayfa-secici">
+              {sayfaListesi.map((p) => (
+                <option key={p} value={p}>
+                  Sayfa {p}
+                </option>
+              ))}
+            </select>
+            <button className="btn-altin" onClick={sayfayaGit}>Git</button>
+          </div>
+
+          <button className="btn-altin" onClick={sureyiDinle}>Dinle</button>
+          <button className="btn-altin" onClick={tefsirToggle} disabled={tefsirYukleniyor}>{tefsirYukleniyor ? 'Yukleniyor...' : 'Tefsir'}</button>
+          <button className="btn-altin" onClick={() => setOkumaModuAcik(true)} disabled={arapcaAyetler.length === 0}>Odak</button>
           <button className="btn-altin" onClick={() => setSayfaGorunumu((s) => !s)}>{sayfaGorunumu ? 'Ayet Modu' : 'Sayfa Modu'}</button>
 
           <div className="topbar-yazi-kontrol" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -159,12 +231,12 @@ export default function AnaSayfa({ aktifSure, geriDon, kayitlar, auth, karanlik,
 
           {girisliMi && (
             <button className="btn-altin" onClick={() => (yerIsaretli ? kayitlar.yerIsaretiKaldir(aktifSure.number) : kayitlar.yerIsaretiEkle({ number: aktifSure.number, ad: sureAdi }))}>
-              {yerIsaretli ? '🔖 Isaretli' : '🔖 Yer Isareti'}
+              {yerIsaretli ? 'Isaretli' : 'Yer Isareti'}
             </button>
           )}
           {girisliMi && (
             <button className="btn-altin" onClick={() => (tamamlandi ? kayitlar.okunduKaldir(aktifSure.number) : kayitlar.okunduEkle({ number: aktifSure.number, ad: sureAdi }))}>
-              {tamamlandi ? '✅ Tamamlandi' : '○ Tamamlandi'}
+              {tamamlandi ? 'Tamamlandi' : 'Tamamla'}
             </button>
           )}
         </div>
@@ -184,7 +256,7 @@ export default function AnaSayfa({ aktifSure, geriDon, kayitlar, auth, karanlik,
 
         {!yukleniyor && !hata && arapcaAyetler.length > 0 && (
           sayfaGorunumu ? (
-            <SayfaModu ayetler={arapcaAyetler} sureAdi={sureAdi} />
+            <SayfaModu ayetler={arapcaAyetler} sureAdi={sureAdi} sayfaRefleri={sayfaRefleri} />
           ) : (
             <div className="icerik-ic">
               <div style={{ textAlign: 'center', padding: '28px 0 32px', borderBottom: '2px solid var(--gold-border)', marginBottom: 8 }}>
@@ -192,7 +264,21 @@ export default function AnaSayfa({ aktifSure, geriDon, kayitlar, auth, karanlik,
                 <div style={{ fontSize: 'clamp(13px,3vw,16px)', color: 'var(--text-muted)' }}>{nuzulYeri} suresi · {aktifSure.numberOfAyahs} ayet</div>
               </div>
               {arapcaAyetler.map((ayet, i) => (
-                <AyetKart key={ayet.number} arapca={ayet} turkce={turkceMeal[i]} tefsir={tefsirAyetler[i]} sureNo={aktifSure.number} sureAd={sureAdi} sesOynat={sesOynat} yaziBoyutu={yaziBoyutu} tefsirAcik={tefsirAcik} />
+                <AyetKart
+                  key={ayet.number}
+                  arapca={ayet}
+                  turkce={turkceMeal[i]}
+                  tefsir={tefsirAyetler[i]}
+                  sureNo={aktifSure.number}
+                  sureAd={sureAdi}
+                  sesOynat={sesOynat}
+                  yaziBoyutu={yaziBoyutu}
+                  tefsirAcik={tefsirAcik}
+                  sayfaNo={ayetSayfasi(ayet, i)}
+                  satirRef={(el) => {
+                    ayetRefleri.current[ayet.number] = el;
+                  }}
+                />
               ))}
             </div>
           )

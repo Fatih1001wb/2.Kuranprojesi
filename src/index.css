@@ -410,3 +410,21 @@ img    { max-width: 100%; }
   font-size: clamp(26px, 3.2vw, 34px);
   color: var(--text);
 }
+
+.sayfa-secici {
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--gold-border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.tw-base { color: var(--text); }
+.tw-fetha { color: #b04242; }
+.tw-damma { color: #2e6f9e; }
+.tw-kesra { color: #2a8a54; }
+.tw-sedde { color: #8e45b8; }
+.tw-sukun { color: #7b6a54; }
+.tw-medd { color: #ca7f1f; }
+.tw-tanvin { color: #c0557a; }
