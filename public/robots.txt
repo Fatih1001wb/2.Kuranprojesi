@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://2-kuranprojesi.vercel.app/sitemap.xml

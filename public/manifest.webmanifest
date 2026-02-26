@@ -1,0 +1,16 @@
+{
+  "name": "Kuran-i Kerim",
+  "short_name": "Kuran",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e1a10",
+  "theme_color": "#1e1a10",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
