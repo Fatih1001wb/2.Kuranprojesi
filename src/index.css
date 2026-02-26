@@ -76,6 +76,32 @@ html { transition: background-color 0.3s ease, color 0.3s ease; }
   --shadow-lg:     0 12px 48px rgba(0,0,0,0.5);
 }
 
+[data-tema="toprak"] {
+  --bg:            #efe3d2;
+  --bg-surface:    #e5d4bd;
+  --bg-card:       #f6ecdf;
+  --bg-hover:      #ddc9ad;
+  --sidebar-bg:    #3a2c1d;
+  --sidebar-text:  #f1e7d7;
+  --sidebar-muted: #c8b28f;
+  --sidebar-border:rgba(233,192,120,0.2);
+  --gold:          #8f5f1d;
+  --gold-light:    #b57c2f;
+  --gold-border:   rgba(143,95,29,0.25);
+  --gold-dim:      rgba(143,95,29,0.11);
+  --text:          #2f1e10;
+  --text-sec:      #4a3320;
+  --text-muted:    #7b6247;
+  --green:         #2f6b4d;
+  --green-bg:      rgba(47,107,77,0.12);
+  --red:           #8e3d2e;
+  --red-bg:        rgba(142,61,46,0.1);
+  --border:        rgba(143,95,29,0.18);
+  --shadow-sm:     0 2px 8px rgba(47,30,16,0.1);
+  --shadow-md:     0 4px 20px rgba(47,30,16,0.14);
+  --shadow-lg:     0 12px 48px rgba(47,30,16,0.2);
+}
+
 /* ─── Base ──────────────────────────────────────────── */
 html, body, #root {
   height: 100%;

@@ -9,21 +9,22 @@ import AnaSayfa from './pages/AnaSayfa';
 import GirisEkrani from './pages/GirisEkrani';
 import { tumSureleriGetir } from './services/kuranApi';
 
-function TemaButonu({ karanlik, toggle }) {
+function TemaButonu({ tema, toggle }) {
+  const etiket = tema === 'karanlik' ? 'Gece' : tema === 'toprak' ? 'Toprak' : 'Gunduz';
   return (
     <button
       className="btn-altin"
       onClick={toggle}
       style={{ padding: '8px 12px', fontSize: 13 }}
-      title={karanlik ? 'Aydinlik moda gec' : 'Karanlik moda gec'}
+      title="Tema degistir"
     >
-      {karanlik ? 'Gunduz' : 'Gece'}
+      {etiket}
     </button>
   );
 }
 
 function App() {
-  const { karanlik, toggle } = useTheme();
+  const { tema, karanlik, toggle } = useTheme();
   const auth = useAuth();
   const kayitlar = useKayitlar(auth.kullanici);
   const hatim = useHatim(auth.kullanici, kayitlar.okundu);
@@ -98,7 +99,7 @@ function App() {
         <div style={{ flex: 1, minWidth: 0, fontFamily: "'Cinzel', serif", color: '#c9a84c', letterSpacing: 1.5, fontSize: 16 }}>
           Kuran-i Kerim
         </div>
-        <TemaButonu karanlik={karanlik} toggle={toggle} />
+        <TemaButonu tema={tema} toggle={toggle} />
       </div>
 
       {mobilMenuAcik && <div className="sidebar-overlay" onClick={() => setMobilMenuAcik(false)} />}
@@ -124,7 +125,7 @@ function App() {
                 Hatim Takibi
               </button>
             )}
-            <TemaButonu karanlik={karanlik} toggle={toggle} />
+            <TemaButonu tema={tema} toggle={toggle} />
           </div>
         )}
 
