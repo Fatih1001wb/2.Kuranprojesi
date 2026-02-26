@@ -90,17 +90,19 @@ function App() {
 
   return (
     <div className="app-layout">
-      <div className="mobil-topbar">
-        <button className="hamburger" onClick={() => setMobilMenuAcik(true)} aria-label="Menuyu ac">
-          <span />
-          <span />
-          <span />
-        </button>
-        <div style={{ flex: 1, minWidth: 0, fontFamily: "'Cinzel', serif", color: '#c9a84c', letterSpacing: 1.5, fontSize: 16 }}>
-          Kuran-i Kerim
+      {!aktifSure && (
+        <div className="mobil-topbar">
+          <button className="hamburger" onClick={() => setMobilMenuAcik(true)} aria-label="Menuyu ac">
+            <span />
+            <span />
+            <span />
+          </button>
+          <div style={{ flex: 1, minWidth: 0, fontFamily: "'Cinzel', serif", color: '#c9a84c', letterSpacing: 1.5, fontSize: 16 }}>
+            Kuran-i Kerim
+          </div>
+          <TemaButonu tema={tema} toggle={toggle} />
         </div>
-        <TemaButonu tema={tema} toggle={toggle} />
-      </div>
+      )}
 
       {mobilMenuAcik && <div className="sidebar-overlay" onClick={() => setMobilMenuAcik(false)} />}
 
@@ -117,7 +119,7 @@ function App() {
         />
       </aside>
 
-      <main className="main-area">
+      <main className={`main-area ${!aktifSure ? 'with-mobile-topbar' : ''}`}>
         {!aktifSure && (
           <div style={{ position: 'fixed', top: 12, right: 14, zIndex: 90, display: 'flex', gap: 8 }}>
             {auth.kullanici && (

@@ -203,7 +203,7 @@ img    { max-width: 100%; }
   .mobil-topbar {
     display: flex !important;
   }
-  .main-area {
+  .main-area.with-mobile-topbar {
     padding-top: var(--topbar-h);
   }
 }
