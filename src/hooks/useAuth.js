@@ -1,14 +1,23 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../services/supabase';
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+} from 'firebase/auth';
+import { firebaseAuth, githubProvider, googleProvider } from '../services/firebase';
 
-function turkceHata(msg) {
-  if (!msg) return 'Bir hata oluştu.';
-  if (msg.includes('Invalid login')) return 'E-posta veya şifre yanlış.';
-  if (msg.includes('Email not confirmed')) return 'E-postanızı doğrulamanız gerekiyor.';
-  if (msg.includes('already registered')) return 'Bu e-posta zaten kayıtlı.';
-  if (msg.includes('Password should')) return 'Şifre en az 6 karakter olmalı.';
-  if (msg.includes('rate limit')) return 'Çok fazla deneme. Lütfen bekleyin.';
-  return msg;
+function turkceHata(msg = '') {
+  if (msg.includes('auth/invalid-credential')) return 'E-posta veya sifre hatali.';
+  if (msg.includes('auth/user-not-found')) return 'Kullanici bulunamadi.';
+  if (msg.includes('auth/wrong-password')) return 'Sifre yanlis.';
+  if (msg.includes('auth/email-already-in-use')) return 'Bu e-posta zaten kayitli.';
+  if (msg.includes('auth/weak-password')) return 'Sifre en az 6 karakter olmali.';
+  if (msg.includes('auth/popup-closed-by-user')) return 'Girisi tamamlamadan pencereyi kapattiniz.';
+  if (msg.includes('auth/operation-not-allowed')) return 'Bu giris tipi Firebase panelinde aktif degil.';
+  if (msg.includes('auth/unauthorized-domain')) return 'Bu domain Firebase tarafinda yetkilendirilmemis.';
+  return 'Bir hata olustu.';
 }
 
 export function useAuth() {
@@ -16,56 +25,55 @@ export function useAuth() {
   const [yukleniyor, setYukleniyor] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setKullanici(session?.user ?? null);
+    const unsub = onAuthStateChanged(firebaseAuth, (user) => {
+      setKullanici(user ?? null);
       setYukleniyor(false);
     });
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_e, session) => {
-      setKullanici(session?.user ?? null);
-      setYukleniyor(false);
-    });
-    return () => subscription.unsubscribe();
+    return () => unsub();
   }, []);
 
   const kayitOl = async (email, sifre) => {
-    const { error } = await supabase.auth.signUp({ email, password: sifre });
-    if (error) return { hata: turkceHata(error.message) };
-    return { basari: true, mesaj: 'Hesap oluşturuldu. E-posta doğrulamasını tamamlayın.' };
+    try {
+      await createUserWithEmailAndPassword(firebaseAuth, email, sifre);
+      return { basari: true, mesaj: 'Hesap olusturuldu.' };
+    } catch (e) {
+      return { hata: turkceHata(e?.message || '') };
+    }
   };
 
   const girisYap = async (email, sifre) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password: sifre });
-    if (error) return { hata: turkceHata(error.message) };
-    return { basari: true };
+    try {
+      await signInWithEmailAndPassword(firebaseAuth, email, sifre);
+      return { basari: true };
+    } catch (e) {
+      return { hata: turkceHata(e?.message || '') };
+    }
   };
 
   const googleIleGiris = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
-    });
-    if (error) return { hata: turkceHata(error.message) };
-    return { basari: true };
+    try {
+      await signInWithPopup(firebaseAuth, googleProvider);
+      return { basari: true };
+    } catch (e) {
+      return { hata: turkceHata(e?.message || '') };
+    }
   };
 
   const githubIleGiris = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: { redirectTo: window.location.origin },
-    });
-    if (error) return { hata: turkceHata(error.message) };
-    return { basari: true };
+    try {
+      await signInWithPopup(firebaseAuth, githubProvider);
+      return { basari: true };
+    } catch (e) {
+      return { hata: turkceHata(e?.message || '') };
+    }
   };
 
-  const cikisYap = () => supabase.auth.signOut();
+  const cikisYap = async () => {
+    await signOut(firebaseAuth);
+  };
 
-  const kullaniciAdi = kullanici
-    ? kullanici.user_metadata?.full_name || kullanici.user_metadata?.user_name || kullanici.email?.split('@')[0] || 'Kullanıcı'
-    : null;
-
-  const avatar = kullanici?.user_metadata?.avatar_url || null;
+  const kullaniciAdi = kullanici?.displayName || kullanici?.email?.split('@')[0] || 'Kullanici';
+  const avatar = kullanici?.photoURL || null;
 
   return {
     kullanici,
