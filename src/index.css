@@ -3,8 +3,7 @@
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 /* ─── Tema geçişi ───────────────────────────────────── */
-html { transition: background-color 0.3s ease, color 0.3s ease; }
-*, *::before, *::after { transition-property: background-color, border-color, color; transition-duration: 0.25s; transition-timing-function: ease; }
+html { transition: background-color 0.22s ease, color 0.22s ease; }
 /* Animasyon olan elementlerde geçişi kaldır */
 .ayet-kart, .ayet-arapca, .ayet-meal, [class*="spinner"] { transition: none !important; }
 
@@ -155,6 +154,7 @@ img    { max-width: 100%; }
 .app-layout {
   display: flex;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   position: relative;
 }
@@ -287,11 +287,14 @@ img    { max-width: 100%; }
   flex-wrap: wrap;
   row-gap: 6px;
   box-shadow: 0 2px 12px rgba(42,25,10,0.07);
+  position: sticky;
+  top: 0;
+  z-index: 45;
 }
 
 @media (max-width: 768px) {
   .sure-topbar {
-    padding: 8px 14px;
+    padding: calc(8px + env(safe-area-inset-top)) 14px 8px;
     gap: 7px;
   }
   .sure-baslik-buyuk { font-size: 16px !important; }
@@ -517,4 +520,11 @@ img    { max-width: 100%; }
   font-size: 11px;
   color: var(--sidebar-muted);
   margin-top: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
