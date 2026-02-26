@@ -1,21 +1,24 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  setDoc,
+} from 'firebase/firestore';
+import { db } from '../services/firebase';
 
-function okuJson(key, varsayilan) {
-  try {
-    const ham = localStorage.getItem(key);
-    return ham ? JSON.parse(ham) : varsayilan;
-  } catch {
-    return varsayilan;
-  }
-}
-
-function yazJson(key, deger) {
-  localStorage.setItem(key, JSON.stringify(deger));
+function tarihToIso(tarih) {
+  if (!tarih) return new Date().toISOString();
+  if (typeof tarih === 'string') return tarih;
+  if (typeof tarih?.toDate === 'function') return tarih.toDate().toISOString();
+  return new Date().toISOString();
 }
 
 export function useKayitlar(kullanici) {
   const uid = kullanici?.uid;
-  const prefix = useMemo(() => (uid ? `kuran:${uid}` : ''), [uid]);
   const [yerIsaretleri, setYerIsaretleri] = useState([]);
   const [okundu, setOkundu] = useState([]);
 
@@ -25,62 +28,66 @@ export function useKayitlar(kullanici) {
       setOkundu([]);
       return;
     }
-    setYerIsaretleri(okuJson(`${prefix}:yer_isaretleri`, []));
-    setOkundu(okuJson(`${prefix}:okundu`, []));
-  }, [uid, prefix]);
+
+    const yerQ = query(collection(db, 'kullanicilar', uid, 'yer_isaretleri'), orderBy('tarih', 'desc'));
+    const okQ = query(collection(db, 'kullanicilar', uid, 'okundu'), orderBy('tarih', 'desc'));
+
+    const unsubYer = onSnapshot(yerQ, (snap) => {
+      setYerIsaretleri(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          tarih: tarihToIso(d.data().tarih),
+        }))
+      );
+    });
+
+    const unsubOk = onSnapshot(okQ, (snap) => {
+      setOkundu(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          tarih: tarihToIso(d.data().tarih),
+        }))
+      );
+    });
+
+    return () => {
+      unsubYer();
+      unsubOk();
+    };
+  }, [uid]);
 
   const yerIsaretiEkle = async (sure) => {
     if (!uid) return;
-    const kayit = {
-      id: `${sure.number}-${Date.now()}`,
+    await setDoc(doc(db, 'kullanicilar', uid, 'yer_isaretleri', String(sure.number)), {
       kullanici_id: uid,
       sure_numara: sure.number,
       sure_ad: sure.ad,
       tarih: new Date().toISOString(),
-    };
-    setYerIsaretleri((prev) => {
-      const temiz = prev.filter((x) => x.sure_numara !== sure.number);
-      const yeni = [kayit, ...temiz];
-      yazJson(`${prefix}:yer_isaretleri`, yeni);
-      return yeni;
     });
   };
 
   const yerIsaretiKaldir = async (num) => {
     if (!uid) return;
-    setYerIsaretleri((prev) => {
-      const yeni = prev.filter((x) => x.sure_numara !== num);
-      yazJson(`${prefix}:yer_isaretleri`, yeni);
-      return yeni;
-    });
+    await deleteDoc(doc(db, 'kullanicilar', uid, 'yer_isaretleri', String(num)));
   };
 
   const yerIsaretliMi = (num) => yerIsaretleri.some((x) => x.sure_numara === num);
 
   const okunduEkle = async (sure) => {
     if (!uid) return;
-    const kayit = {
-      id: `${sure.number}-${Date.now()}`,
+    await setDoc(doc(db, 'kullanicilar', uid, 'okundu', String(sure.number)), {
       kullanici_id: uid,
       sure_numara: sure.number,
       sure_ad: sure.ad,
       tarih: new Date().toISOString(),
-    };
-    setOkundu((prev) => {
-      const temiz = prev.filter((x) => x.sure_numara !== sure.number);
-      const yeni = [kayit, ...temiz];
-      yazJson(`${prefix}:okundu`, yeni);
-      return yeni;
     });
   };
 
   const okunduKaldir = async (num) => {
     if (!uid) return;
-    setOkundu((prev) => {
-      const yeni = prev.filter((x) => x.sure_numara !== num);
-      yazJson(`${prefix}:okundu`, yeni);
-      return yeni;
-    });
+    await deleteDoc(doc(db, 'kullanicilar', uid, 'okundu', String(num)));
   };
 
   const okunduMu = (num) => okundu.some((x) => x.sure_numara === num);

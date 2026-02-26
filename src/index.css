@@ -309,10 +309,15 @@ img    { max-width: 100%; }
 }
 
 .ayet-arapca {
-  font-family: 'Scheherazade New', serif;
+  font-family: 'Noto Naskh Arabic', serif;
   line-height: 2.2;
   text-align: right;
   direction: rtl;
+  unicode-bidi: plaintext;
+  font-weight: 600;
+  font-feature-settings: "liga" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
   color: var(--text);
   margin-bottom: 14px;
   word-break: break-word;
@@ -437,10 +442,14 @@ img    { max-width: 100%; }
 }
 
 .quran-page-text {
-  font-family: 'Scheherazade New', serif;
+  font-family: 'Noto Naskh Arabic', serif;
   direction: rtl;
   text-align: justify;
   line-height: 2.3;
+  unicode-bidi: plaintext;
+  font-weight: 600;
+  font-feature-settings: "liga" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
   font-size: clamp(26px, 3.2vw, 34px);
   color: var(--text);
 }
